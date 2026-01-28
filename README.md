@@ -18,8 +18,8 @@ Add this repo as a marketplace, then install plugins:
 # Add the marketplace (one-time)
 claude plugin marketplace add https://github.com/Zarna-AI/claude-plugins
 
-# Install the plugin
-claude plugin install security-scan
+# Install the plugin (project scope recommended)
+claude plugin install security-scan --scope project
 ```
 
 ### Option 2: Local Development
@@ -33,9 +33,22 @@ claude --plugin-dir /path/to/claude-plugins/security-scan
 
 ## For Team Members
 
-1. Install the plugin(s) you need
-2. Set required environment variables (see each plugin's README)
-3. Run the plugin's setup command
+One-time setup for new team members:
+
+```bash
+# Add the marketplace (one-time)
+claude plugin marketplace add https://github.com/Zarna-AI/claude-plugins
+
+# Install for this project only (recommended)
+claude plugin install security-scan --scope project
+
+# Or install for all projects
+claude plugin install security-scan --scope user
+```
+
+Then:
+1. Set required environment variables (see each plugin's README)
+2. Run the plugin's setup command (e.g., `/security-setup`)
 
 ## Contributing
 
