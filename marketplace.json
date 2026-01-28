@@ -1,0 +1,11 @@
+{
+  "name": "zarna-plugins",
+  "description": "Zarna team's shared Claude Code plugins",
+  "plugins": [
+    {
+      "name": "security-scan",
+      "path": "./security-scan",
+      "description": "Enhanced security review with stack-specific context, compliance tracking, audit trail, and Slack integration"
+    }
+  ]
+}

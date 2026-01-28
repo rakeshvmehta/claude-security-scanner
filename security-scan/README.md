@@ -12,12 +12,16 @@ Enhanced security review plugin for Claude Code that builds on top of the built-
 
 ### For your team (from git repo)
 ```bash
-claude plugins add https://github.com/Zarna-AI/claude-plugins/security-scan
+# Add the marketplace (one-time)
+claude plugin marketplace add https://github.com/Zarna-AI/claude-plugins
+
+# Install the plugin
+claude plugin install security-scan
 ```
 
 ### For local development
 ```bash
-claude --plugin-dir /path/to/claude-plugins/security-review
+claude --plugin-dir /path/to/claude-plugins/security-scan
 ```
 
 ## Setup
