@@ -1,7 +1,7 @@
 ---
 description: Run enhanced security review with stack-specific context and compliance tracking
 argument-hint: [--area <area>] [--no-save] [--no-slack]
-allowed-tools: Read, Glob, Grep, Bash, Write, Skill
+allowed-tools: Read, Glob, Grep, Bash, Write, Skill, AskUserQuestion
 ---
 
 # Enhanced Security Review
@@ -144,32 +144,74 @@ From all loaded context, build a list of known issues:
 - **Don't re-scan** = Don't spend time looking for these issues again
 - **Highlight in report** = Include them in the "Unresolved Known Issues" section as reminders
 
-### 6c. Invoke Built-in Security Review
+### 6c. Find Git Repositories
 
-Use the **Skill tool** to invoke Claude's built-in `/security-review` command:
+The built-in `/security-review` command requires git context. Find all git repositories in the project:
 
+```bash
+find . -name ".git" -type d -maxdepth 3 2>/dev/null | sed 's/\/.git$//'
 ```
-Skill: security-review
+
+This will return paths like:
+- `./zarna-frontend`
+- `./zarna-backend`
+
+### 6d. Ask User Which Repos to Scan
+
+Present the found repositories to the user using `AskUserQuestion`:
+
+**Question:** "Which repositories would you like to run the security review on?"
+
+**Options:** (derived from found repos)
+- Each found git repo as a selectable option
+- Use `multiSelect: true` so user can select multiple repos
+
+Example:
+```
+AskUserQuestion:
+  question: "Which repositories would you like to run the security review on?"
+  header: "Git Repos"
+  multiSelect: true
+  options:
+    - label: "zarna-frontend"
+      description: "Next.js frontend application"
+    - label: "zarna-backend"
+      description: "FastAPI backend application"
 ```
 
-The built-in command will run with all the context you've loaded (stack patterns, compliance requirements, known issues) available in the conversation.
+Wait for user selection before proceeding.
 
-**IMPORTANT:** Before invoking, remind yourself of the context:
+### 6e. Invoke Built-in Security Review for Each Selected Repo
 
-> I have loaded the following context for this security review:
-> - Stack patterns: {list from Step 3}
-> - Compliance requirements: {list from Step 4}
-> - Known issues to skip (but highlight as reminders): {count from Step 5}
->
-> When running the security review:
-> 1. Apply the stack-specific vulnerability patterns I loaded
-> 2. Check compliance requirements I loaded
-> 3. Don't re-report known issues, but include them in "Unresolved Known Issues" section
-> 4. Focus on finding NEW vulnerabilities
+For EACH repository the user selected:
 
-Then invoke: `Skill tool with skill: "security-review"`
+1. **Change to the repository directory:**
+   ```bash
+   cd {repo_path}
+   ```
 
-### 6d. Enhance Results with Loaded Context
+2. **Summarize the context for this repo:**
+   > I have loaded the following context for this security review of {repo_name}:
+   > - Stack patterns: {list relevant patterns for this repo}
+   > - Compliance requirements: {list from Step 4}
+   > - Known issues to skip (but highlight as reminders): {count from Step 5}
+   >
+   > When running the security review:
+   > 1. Apply the stack-specific vulnerability patterns I loaded
+   > 2. Check compliance requirements I loaded
+   > 3. Don't re-report known issues, but include them in "Unresolved Known Issues" section
+   > 4. Focus on finding NEW vulnerabilities
+
+3. **Use the Skill tool** to invoke Claude's built-in `/security-review` command:
+   ```
+   Skill: security-review
+   ```
+
+4. **Collect the findings** from this repo before moving to the next.
+
+Repeat for each selected repository, then combine all findings into a single report.
+
+### 6f. Enhance Results with Loaded Context
 
 After the built-in security review completes, enhance the results:
 
@@ -191,7 +233,7 @@ After the built-in security review completes, enhance the results:
 - Remediation steps
 - Compliance implications (if any)
 
-### 6e. Update Remediation Tracker
+### 6g. Update Remediation Tracker
 
 After completing the review:
 
@@ -208,7 +250,7 @@ After completing the review:
    - For each issue in "In Progress", verify if fix is deployed
    - If FIXED → Move to "Fixed" table
 
-### 6f. Save Report
+### 6h. Save Report
 
 Save the security review report to: `{reports_path}/YYYY-MM-DD-scan.md`
 
