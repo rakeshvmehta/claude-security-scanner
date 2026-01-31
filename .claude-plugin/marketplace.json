@@ -1,9 +1,9 @@
 {
-  "name": "zarna-plugins",
+  "name": "claude-security-scanner",
   "owner": {
-    "name": "Zarna Team"
+    "name": "Rakesh Mehta"
   },
-  "description": "Zarna team's shared Claude Code plugins",
+  "description": "Open-source Claude Code plugin for security reviews with stack-specific context",
   "plugins": [
     {
       "name": "security-scan",
