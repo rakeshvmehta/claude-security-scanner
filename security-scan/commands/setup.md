@@ -281,8 +281,24 @@ find . -name ".git" -type d -maxdepth 3 2>/dev/null | sed 's/\/.git$//'
 This returns paths like:
 - `./zarna-frontend`
 - `./zarna-backend`
+- `./some-other-repo`
 
-### 10b: Check Existing Hooks
+### 10b: Select Repositories to Track
+
+Present the discovered repositories to the user and ask which ones should have security hooks installed:
+
+"Found the following git repositories. Which ones should have security scan tracking enabled?"
+
+Use AskUserQuestion with multiSelect: true, listing each discovered repo as an option.
+
+**Typical selections:**
+- Main application repos (frontend, backend) → YES
+- Third-party/vendor repos → NO
+- Plugin/tool repos → Usually NO
+
+Only proceed with hook installation for selected repositories.
+
+### 10c: Check Existing Hooks (for selected repos)
 
 For each git repository found, check if hooks already exist:
 
@@ -300,7 +316,7 @@ grep -q "# security-scan-hook" "{repo}/.git/hooks/pre-commit" && echo "our hook"
 
 **If other hooks exist:** Ask user if they want to append or skip.
 
-### 10c: Create State File
+### 10d: Create State File
 
 Create `.security-state` at project root if it doesn't exist:
 
@@ -319,7 +335,7 @@ unscanned_commits:
   # Cleared when scan runs
 ```
 
-### 10d: Install Pre-commit Hook
+### 10e: Install Pre-commit Hook
 
 For each repository, create `{repo}/.git/hooks/pre-commit`:
 
@@ -374,7 +390,7 @@ exit 0  # Warning only, don't block commits
 
 Make executable: `chmod +x {repo}/.git/hooks/pre-commit`
 
-### 10e: Install Post-commit Hook
+### 10f: Install Post-commit Hook
 
 For each repository, create `{repo}/.git/hooks/post-commit`:
 
@@ -427,7 +443,7 @@ exit 0
 
 Make executable: `chmod +x {repo}/.git/hooks/post-commit`
 
-### 10f: Update .gitignore
+### 10g: Update .gitignore
 
 Check if `.security-state` is in `.gitignore`:
 
@@ -441,7 +457,7 @@ If not present, append:
 .security-state
 ```
 
-### 10g: Report Installation Status
+### 10h: Report Installation Status
 
 For each repo, report:
 - "✓ Installed pre-commit hook in {repo}"
